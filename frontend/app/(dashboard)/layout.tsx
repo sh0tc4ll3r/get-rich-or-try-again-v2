@@ -39,6 +39,12 @@ export default function DashboardLayout({
               >
                 Trades
               </Link>
+              <Link
+                href="/dashboard/settings"
+                className="text-sm text-slate-300 hover:text-white transition-colors"
+              >
+                Settings
+              </Link>
             </div>
           </div>
           <UserButton afterSignOutUrl="/" />
