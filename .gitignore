@@ -42,5 +42,3 @@ logs/
 *.db
 *.sqlite3
 
-# Project checkpoint (local only)
-CHECKPOINT.md
