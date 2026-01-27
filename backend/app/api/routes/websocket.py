@@ -9,7 +9,6 @@ from typing import Any
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 from jose import JWTError
 
-from app.api.deps import verify_clerk_token_raw
 from app.services.alpaca import AlpacaService
 from app.core.config import settings
 
