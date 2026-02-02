@@ -185,7 +185,33 @@ async def run_backtest(
     )
 
     # Run backtest (synchronously for now - could be async with Celery later)
-    alpaca = AlpacaService()
+    # Debug: Check if credentials are loaded
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"User {user.id} alpaca_connected={user.alpaca_connected}, has_api_key={user.alpaca_api_key is not None}, key_prefix={user.alpaca_api_key[:8] if user.alpaca_api_key else 'None'}")
+
+    if not user.alpaca_api_key or not user.alpaca_secret_key:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please connect your Alpaca account in Settings before running backtests",
+        )
+
+    # Verify credentials work by testing account access first
+    try:
+        alpaca = AlpacaService(
+            api_key=user.alpaca_api_key,
+            secret_key=user.alpaca_secret_key,
+        )
+        # Quick test - this will fail fast if credentials are bad
+        alpaca.get_account()
+        logger.info("Alpaca credentials verified successfully")
+    except Exception as e:
+        logger.error(f"Alpaca credential verification failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Alpaca API error: {str(e)}. Please check your credentials in Settings.",
+        )
+
     await backtest_service.run(backtest, strategy, alpaca)
 
     return backtest_to_response(backtest, strategy.name)

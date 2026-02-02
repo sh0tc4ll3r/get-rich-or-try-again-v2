@@ -161,9 +161,69 @@ export interface Trade {
   status: string;
   source: string;
   signal_reason: string | null;
+  notes: string | null;
+  notes_updated_at: string | null;
   created_at: string;
   submitted_at: string | null;
   filled_at: string | null;
+}
+
+// Analytics types
+export interface PerformanceMetrics {
+  total_return: number | null;
+  sharpe_ratio: number | null;
+  max_drawdown: number | null;
+  win_rate: number | null;
+  total_trades: number;
+}
+
+export interface PerformanceData {
+  period: string;
+  dates: string[];
+  equity_values: number[];
+  cumulative_returns: number[];
+  metrics: PerformanceMetrics;
+  backtest_count: number;
+}
+
+export interface BacktestComparisonInfo {
+  id: number;
+  strategy_id: number;
+  strategy_name: string;
+  start_date: string;
+  end_date: string;
+  total_return: number | null;
+  sharpe_ratio: number | null;
+  sortino_ratio: number | null;
+  max_drawdown: number | null;
+  win_rate: number | null;
+  profit_factor: number | null;
+  total_trades: number | null;
+}
+
+export interface ComparisonSeries {
+  backtest_id: number;
+  label: string;
+  data: Array<{ date: string; value: number }>;
+}
+
+export interface StrategyComparisonData {
+  backtests: BacktestComparisonInfo[];
+  series: ComparisonSeries[];
+}
+
+export interface TradeStats {
+  total_trades: number;
+  filled_trades: number;
+  winning_trades: number;
+  losing_trades: number;
+  win_rate: number | null;
+  unique_symbols: number;
+  total_buy_value: number;
+  total_sell_value: number;
+  net_value: number;
+  by_source: Record<string, number>;
+  period: string | null;
 }
 
 class ApiError extends Error {
@@ -181,9 +241,9 @@ async function request<T>(
   options: RequestInit = {},
   token?: string
 ): Promise<T> {
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   if (token) {
@@ -359,6 +419,56 @@ export const tradesApi = {
       { method: "DELETE" },
       token
     ),
+
+  updateNotes: (token: string, id: number, notes: string | null) =>
+    request<Trade>(
+      `/api/orders/${id}/notes`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ notes }),
+      },
+      token
+    ),
+};
+
+// Analytics API
+export const analyticsApi = {
+  getPerformance: (token: string, period = "30d", strategyId?: number) => {
+    const params = new URLSearchParams();
+    params.set("period", period);
+    if (strategyId) params.set("strategy_id", strategyId.toString());
+    return request<PerformanceData>(
+      `/api/analytics/performance?${params.toString()}`,
+      {},
+      token
+    );
+  },
+
+  compareStrategies: (token: string, backtestIds: number[]) => {
+    const params = new URLSearchParams();
+    params.set("backtest_ids", backtestIds.join(","));
+    return request<StrategyComparisonData>(
+      `/api/analytics/strategy-comparison?${params.toString()}`,
+      {},
+      token
+    );
+  },
+
+  getTradeStats: (
+    token: string,
+    options?: { period?: string; strategyId?: number; symbol?: string }
+  ) => {
+    const params = new URLSearchParams();
+    if (options?.period) params.set("period", options.period);
+    if (options?.strategyId)
+      params.set("strategy_id", options.strategyId.toString());
+    if (options?.symbol) params.set("symbol", options.symbol);
+    return request<TradeStats>(
+      `/api/analytics/trade-stats?${params.toString()}`,
+      {},
+      token
+    );
+  },
 };
 
 // Execution API

@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, backtests, execution, orders, strategies, trading, websocket
+from app.api.routes import analytics, auth, backtests, execution, orders, strategies, trading, websocket
 from app.core.config import settings
 from app.core.database import engine
 from app.services.scheduler import get_scheduler
@@ -54,6 +54,7 @@ app.include_router(backtests.router, prefix="/api/backtests", tags=["backtests"]
 app.include_router(orders.router, prefix="/api/orders", tags=["orders"])
 app.include_router(trading.router, prefix="/api/trading", tags=["trading"])
 app.include_router(execution.router, prefix="/api/execution", tags=["execution"])
+app.include_router(analytics.router, prefix="/api/analytics", tags=["analytics"])
 app.include_router(websocket.router, prefix="/api", tags=["websocket"])
 
 

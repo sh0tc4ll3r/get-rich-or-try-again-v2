@@ -99,3 +99,9 @@ class TradeService:
         """Cancel a trade."""
         trade.status = OrderStatus.CANCELED.value
         return trade
+
+    async def update_notes(self, trade: Trade, notes: str | None) -> Trade:
+        """Update trade notes."""
+        trade.notes = notes
+        trade.notes_updated_at = datetime.now(timezone.utc) if notes else None
+        return trade

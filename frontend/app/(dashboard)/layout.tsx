@@ -40,6 +40,24 @@ export default function DashboardLayout({
                 Trades
               </Link>
               <Link
+                href="/dashboard/analytics"
+                className="text-sm text-slate-300 hover:text-white transition-colors"
+              >
+                Analytics
+              </Link>
+              <Link
+                href="/dashboard/compare"
+                className="text-sm text-slate-300 hover:text-white transition-colors"
+              >
+                Compare
+              </Link>
+              <Link
+                href="/dashboard/journal"
+                className="text-sm text-slate-300 hover:text-white transition-colors"
+              >
+                Journal
+              </Link>
+              <Link
                 href="/dashboard/settings"
                 className="text-sm text-slate-300 hover:text-white transition-colors"
               >

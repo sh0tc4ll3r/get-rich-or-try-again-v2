@@ -3,7 +3,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String, func
+from sqlalchemy import DateTime, ForeignKey, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -80,6 +80,10 @@ class Trade(Base):
 
     # Signal reason (educational)
     signal_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    # Trade journal notes
+    notes: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    notes_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(

@@ -70,7 +70,7 @@ export default function BacktestDetailPage() {
         lineWidth: 2,
       });
 
-      const chartData = backtest.equity_curve.map((point) => ({
+      const chartData = backtest.equity_curve!.map((point) => ({
         time: point.date,
         value: point.equity,
       }));

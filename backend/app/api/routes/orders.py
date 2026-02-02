@@ -30,9 +30,17 @@ class TradeResponse(BaseModel):
     status: str
     source: str
     signal_reason: str | None
+    notes: str | None
+    notes_updated_at: str | None
     created_at: str
     submitted_at: str | None
     filled_at: str | None
+
+
+class UpdateNotesRequest(BaseModel):
+    """Request schema for updating trade notes."""
+
+    notes: str | None
 
 
 def trade_to_response(trade) -> TradeResponse:
@@ -53,6 +61,8 @@ def trade_to_response(trade) -> TradeResponse:
         status=trade.status,
         source=trade.source,
         signal_reason=trade.signal_reason,
+        notes=trade.notes,
+        notes_updated_at=trade.notes_updated_at.isoformat() if trade.notes_updated_at else None,
         created_at=trade.created_at.isoformat(),
         submitted_at=trade.submitted_at.isoformat() if trade.submitted_at else None,
         filled_at=trade.filled_at.isoformat() if trade.filled_at else None,
@@ -105,3 +115,25 @@ async def cancel_trade(trade_id: int, user: CurrentUser, db: DbSession):
 
     await service.cancel(trade)
     return {"status": "cancelled", "trade_id": trade_id}
+
+
+@router.put("/{trade_id}/notes", response_model=TradeResponse)
+async def update_trade_notes(
+    trade_id: int,
+    request: UpdateNotesRequest,
+    user: CurrentUser,
+    db: DbSession,
+):
+    """Update notes for a trade."""
+    service = TradeService(db)
+    trade = await service.get_by_id(trade_id, user.id)
+
+    if not trade:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Trade not found",
+        )
+
+    await service.update_notes(trade, request.notes)
+    await db.commit()
+    return trade_to_response(trade)

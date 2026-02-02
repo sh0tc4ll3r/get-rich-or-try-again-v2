@@ -5,6 +5,7 @@ from decimal import Decimal
 from typing import Any
 
 from alpaca.data import StockHistoricalDataClient
+from alpaca.data.enums import DataFeed
 from alpaca.data.requests import StockBarsRequest, StockLatestQuoteRequest
 from alpaca.data.timeframe import TimeFrame
 from alpaca.trading.client import TradingClient
@@ -128,7 +129,7 @@ class AlpacaService:
         """Get account information."""
         account = self.trading_client.get_account()
         return AccountInfo(
-            account_id=account.id,
+            account_id=str(account.id),
             buying_power=Decimal(str(account.buying_power)),
             cash=Decimal(str(account.cash)),
             portfolio_value=Decimal(str(account.portfolio_value)),
@@ -176,7 +177,7 @@ class AlpacaService:
 
     def get_latest_quote(self, symbol: str) -> Quote:
         """Get latest quote for a symbol."""
-        request = StockLatestQuoteRequest(symbol_or_symbols=symbol)
+        request = StockLatestQuoteRequest(symbol_or_symbols=symbol, feed=DataFeed.IEX)
         quotes = self.data_client.get_stock_latest_quote(request)
         quote = quotes[symbol]
         return Quote(
@@ -220,6 +221,7 @@ class AlpacaService:
             start=start,
             end=end,
             limit=limit,
+            feed=DataFeed.IEX,  # Use IEX feed (free tier) instead of SIP (paid)
         )
         bars = self.data_client.get_stock_bars(request)
         return [
@@ -264,8 +266,8 @@ class AlpacaService:
         )
         order = self.trading_client.submit_order(request)
         return OrderResult(
-            order_id=order.id,
-            client_order_id=order.client_order_id,
+            order_id=str(order.id),
+            client_order_id=str(order.client_order_id),
             symbol=order.symbol,
             side=order.side.value,
             order_type=order.order_type.value,
@@ -306,8 +308,8 @@ class AlpacaService:
         )
         order = self.trading_client.submit_order(request)
         return OrderResult(
-            order_id=order.id,
-            client_order_id=order.client_order_id,
+            order_id=str(order.id),
+            client_order_id=str(order.client_order_id),
             symbol=order.symbol,
             side=order.side.value,
             order_type=order.order_type.value,
@@ -329,8 +331,8 @@ class AlpacaService:
         try:
             order = self.trading_client.get_order_by_id(order_id)
             return {
-                "order_id": order.id,
-                "client_order_id": order.client_order_id,
+                "order_id": str(order.id),
+                "client_order_id": str(order.client_order_id),
                 "symbol": order.symbol,
                 "side": order.side.value,
                 "order_type": order.order_type.value,
