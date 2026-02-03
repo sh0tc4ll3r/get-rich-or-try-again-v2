@@ -40,10 +40,16 @@ export default function BacktestDetailPage() {
   useEffect(() => {
     if (!backtest?.equity_curve || !chartRef.current) return;
 
+    let chart: ReturnType<typeof import("lightweight-charts").createChart> | null = null;
+    let handleResize: (() => void) | null = null;
+
     const initChart = async () => {
       const { createChart } = await import("lightweight-charts");
 
-      const chart = createChart(chartRef.current!, {
+      // Clear previous chart
+      chartRef.current!.innerHTML = "";
+
+      chart = createChart(chartRef.current!, {
         width: chartRef.current!.clientWidth,
         height: 300,
         layout: {
@@ -79,20 +85,25 @@ export default function BacktestDetailPage() {
       chart.timeScale().fitContent();
 
       // Handle resize
-      const handleResize = () => {
+      handleResize = () => {
         if (chartRef.current) {
-          chart.applyOptions({ width: chartRef.current.clientWidth });
+          chart?.applyOptions({ width: chartRef.current.clientWidth });
         }
       };
       window.addEventListener("resize", handleResize);
-
-      return () => {
-        window.removeEventListener("resize", handleResize);
-        chart.remove();
-      };
     };
 
     initChart();
+
+    // Cleanup function runs synchronously
+    return () => {
+      if (handleResize) {
+        window.removeEventListener("resize", handleResize);
+      }
+      if (chart) {
+        chart.remove();
+      }
+    };
   }, [backtest?.equity_curve]);
 
   if (loading) {
