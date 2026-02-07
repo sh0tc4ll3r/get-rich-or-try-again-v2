@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [accountError, setAccountError] = useState<string | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
   // WebSocket for real-time updates
@@ -70,15 +71,25 @@ export default function DashboardPage() {
   const fetchData = async () => {
     try {
       setError(null);
+      setAccountError(null);
       const token = await getToken();
 
       // Fetch account and positions (public endpoints)
-      const [accountData, positionsData] = await Promise.all([
-        tradingApi.getAccount().catch(() => null),
+      const [accountResult, positionsData] = await Promise.all([
+        tradingApi.getAccount().catch((err) => {
+          console.error("Failed to fetch account:", err);
+          return { error: err.message || "Unable to connect to trading account" };
+        }),
         tradingApi.getPositions().catch(() => []),
       ]);
 
-      setAccount(accountData);
+      // Check if account fetch returned an error
+      if (accountResult && "error" in accountResult) {
+        setAccountError(accountResult.error);
+        setAccount(null);
+      } else {
+        setAccount(accountResult);
+      }
       setPositions(positionsData);
 
       // Fetch user data if authenticated
@@ -222,6 +233,27 @@ export default function DashboardPage() {
           <CardContent className="py-4 flex items-center gap-2">
             <AlertCircle className="h-4 w-4 text-yellow-400" />
             <p className="text-yellow-400">{error}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {accountError && (
+        <Card className="bg-red-500/10 border-red-500/30">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertCircle className="h-4 w-4 text-red-400" />
+              <p className="text-red-400 font-medium">Unable to connect to trading account</p>
+            </div>
+            <p className="text-red-400/80 text-sm mb-3">
+              {accountError.includes("fetch") || accountError.includes("network")
+                ? "The backend server may not be running. Start it with: cd backend && uvicorn app.main:app --reload"
+                : "Check your Alpaca API credentials in Settings."}
+            </p>
+            <Link href="/dashboard/settings">
+              <Button variant="outline" size="sm" className="border-red-500/50 text-red-400 hover:bg-red-500/10">
+                Go to Settings
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       )}
