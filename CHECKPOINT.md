@@ -1,6 +1,6 @@
 # Get Rich v2 - Project Checkpoint
 
-**Last Updated:** 2026-01-25
+**Last Updated:** 2026-03-06
 
 ## Current State
 
@@ -121,6 +121,29 @@
     - Settings saved to backend via API
   - Database migration for user settings columns
   - Notifications section (placeholder for future)
+- [x] **Performance Analytics** (2026-01-25)
+  - Historical performance charts
+  - Strategy comparison page (`/dashboard/compare`)
+  - Trading journal with notes (`/dashboard/journal`)
+  - Analytics dashboard (`/dashboard/analytics`)
+- [x] **Error Visibility** (2026-01-25)
+  - Trading account connection failure error display
+  - Duplicate chart rendering fix on backtest detail page
+- [x] **Auto-Execute & Strategy Management** (2026-03-06)
+  - `auto_execute` field on Strategy model
+  - Toggle auto-execute API endpoint (`POST /{id}/toggle-auto-execute`)
+  - Auto-execute toggle switch in strategy list UI
+  - Delete confirmation dialogs for strategies
+  - Cascade delete for strategy backtests
+- [x] **Notifications & Toast System** (2026-03-06)
+  - Real-time notification bell component with live alerts
+  - Toast notification system with ToastProvider
+  - Sticky navbar with responsive mobile menu
+- [x] **Onboarding & UI Components** (2026-03-06)
+  - First-time user onboarding modal
+  - AlertDialog and ConfirmDialog UI primitives
+  - Switch toggle component
+  - New dependencies: `@radix-ui/react-alert-dialog`, `@radix-ui/react-switch`
 
 ### Project Structure
 ```
@@ -148,6 +171,9 @@ get-rich-v2/
 │   │   │   │   ├── strategies/   # Strategy list & builder
 │   │   │   │   ├── backtests/    # Backtest list & detail
 │   │   │   │   ├── trades/       # Trade history
+│   │   │   │   ├── analytics/   # Performance analytics
+│   │   │   │   ├── compare/     # Strategy comparison
+│   │   │   │   ├── journal/     # Trading journal
 │   │   │   │   └── settings/     # User settings & profile
 │   │   │   └── layout.tsx        # Dashboard nav
 │   │   ├── layout.tsx            # ClerkProvider wrapper
@@ -179,6 +205,7 @@ get-rich-v2/
 - `POST /{id}/deploy` - Deploy strategy to paper trading
 - `POST /{id}/pause` - Pause active strategy
 - `POST /{id}/stop` - Stop strategy
+- `POST /{id}/toggle-auto-execute` - Toggle auto-execution for active strategy
 
 **Backtests (`/api/backtests`)**
 - `GET /` - List user's backtests (optional: filter by strategy_id)
@@ -236,17 +263,12 @@ get-rich-v2/
 
 ## Next Steps (Priority Order)
 
-1. **Performance Analytics** - Enhanced metrics:
-   - Historical performance charts
-   - Trade journal with notes
-   - Comparison between strategies
-
-2. **Advanced Features**:
+1. **Advanced Features**:
    - Multiple broker support
    - Custom strategy code editor
    - Portfolio optimization
 
-3. **Production Readiness**:
+2. **Production Readiness**:
    - Error monitoring and logging
    - Rate limiting
    - Database backups
