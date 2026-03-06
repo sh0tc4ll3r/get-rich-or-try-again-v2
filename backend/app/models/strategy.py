@@ -48,6 +48,9 @@ class Strategy(Base):
     # Status
     status: Mapped[str] = mapped_column(String(50), default=StrategyStatus.DRAFT.value)
 
+    # Auto-execution: when True, automatically place orders when signals are generated
+    auto_execute: Mapped[bool] = mapped_column(default=False)
+
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
@@ -59,7 +62,9 @@ class Strategy(Base):
 
     # Relationships
     user: Mapped["User"] = relationship(back_populates="strategies")
-    backtests: Mapped[list["Backtest"]] = relationship(back_populates="strategy")
+    backtests: Mapped[list["Backtest"]] = relationship(
+        back_populates="strategy", cascade="all, delete-orphan"
+    )
     trades: Mapped[list["Trade"]] = relationship(back_populates="strategy")
 
     def __repr__(self) -> str:

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { ArrowLeft, Info, Plus, X } from "lucide-react";
+import { ArrowLeft, Info, Plus, X, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,14 +12,59 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { strategiesApi, type StrategyType, type CreateStrategyRequest } from "@/lib/api";
 
+// Strategy templates (same as strategies page)
+const strategyTemplates: Record<string, {
+  name: string;
+  strategy_type: string;
+  symbols: string[];
+  parameters: Record<string, number>;
+  max_position_size: number;
+  max_daily_loss: number;
+  stop_loss_pct: number;
+  take_profit_pct: number;
+}> = {
+  "conservative-growth": {
+    name: "Conservative Growth",
+    strategy_type: "rsi",
+    symbols: ["SPY"],
+    parameters: { rsi_period: 14, oversold_level: 30, overbought_level: 70 },
+    max_position_size: 5,
+    max_daily_loss: 2,
+    stop_loss_pct: 3,
+    take_profit_pct: 5,
+  },
+  "momentum-hunter": {
+    name: "Momentum Hunter",
+    strategy_type: "momentum",
+    symbols: ["AAPL", "MSFT", "GOOGL"],
+    parameters: { lookback_period: 20, momentum_threshold: 5 },
+    max_position_size: 10,
+    max_daily_loss: 5,
+    stop_loss_pct: 5,
+    take_profit_pct: 10,
+  },
+  "mean-reversion": {
+    name: "Mean Reversion Play",
+    strategy_type: "mean_reversion",
+    symbols: ["QQQ", "IWM"],
+    parameters: { sma_period: 20, deviation_threshold: 2 },
+    max_position_size: 8,
+    max_daily_loss: 4,
+    stop_loss_pct: 4,
+    take_profit_pct: 6,
+  },
+};
+
 export default function NewStrategyPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { getToken } = useAuth();
 
   const [strategyTypes, setStrategyTypes] = useState<StrategyType[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [templateApplied, setTemplateApplied] = useState(false);
 
   // Form state
   const [name, setName] = useState("");
@@ -37,7 +82,23 @@ export default function NewStrategyPage() {
       try {
         const types = await strategiesApi.getTypes();
         setStrategyTypes(types);
-        if (types.length > 0) {
+
+        // Check for template in URL
+        const templateId = searchParams.get("template");
+        const template = templateId ? strategyTemplates[templateId] : null;
+
+        if (template) {
+          // Apply template values
+          setName(template.name);
+          setStrategyType(template.strategy_type);
+          setSymbols(template.symbols);
+          setParameters(template.parameters);
+          setMaxPositionSize(template.max_position_size);
+          setMaxDailyLoss(template.max_daily_loss);
+          setStopLossPct(template.stop_loss_pct);
+          setTakeProfitPct(template.take_profit_pct);
+          setTemplateApplied(true);
+        } else if (types.length > 0) {
           setStrategyType(types[0].id);
           // Set default parameters
           const defaults: Record<string, number> = {};
@@ -53,7 +114,7 @@ export default function NewStrategyPage() {
       }
     };
     fetchTypes();
-  }, []);
+  }, [searchParams]);
 
   const selectedType = strategyTypes.find((t) => t.id === strategyType);
 
@@ -145,6 +206,20 @@ export default function NewStrategyPage() {
           <p className="text-slate-400">Configure your trading strategy</p>
         </div>
       </div>
+
+      {templateApplied && (
+        <Card className="bg-blue-500/10 border-blue-500/30">
+          <CardContent className="py-4 flex items-center gap-3">
+            <Sparkles className="h-5 w-5 text-blue-400" />
+            <div>
+              <p className="text-blue-400 font-medium">Template Applied</p>
+              <p className="text-slate-400 text-sm">
+                Form pre-filled with template values. Feel free to customize!
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {error && (
         <Card className="bg-red-500/10 border-red-500/30">

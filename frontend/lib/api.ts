@@ -32,6 +32,7 @@ export interface Strategy {
   stop_loss_pct: number | null;
   take_profit_pct: number | null;
   status: "draft" | "active" | "paused" | "stopped";
+  auto_execute: boolean;
   created_at: string;
   deployed_at: string | null;
 }
@@ -45,6 +46,7 @@ export interface CreateStrategyRequest {
   max_daily_loss?: number;
   stop_loss_pct?: number | null;
   take_profit_pct?: number | null;
+  auto_execute?: boolean;
 }
 
 export interface UpdateStrategyRequest {
@@ -55,6 +57,7 @@ export interface UpdateStrategyRequest {
   max_daily_loss?: number;
   stop_loss_pct?: number | null;
   take_profit_pct?: number | null;
+  auto_execute?: boolean;
 }
 
 export interface UserProfile {
@@ -341,6 +344,9 @@ export const strategiesApi = {
 
   stop: (token: string, id: number) =>
     request<Strategy>(`/api/strategies/${id}/stop`, { method: "POST" }, token),
+
+  toggleAutoExecute: (token: string, id: number) =>
+    request<Strategy>(`/api/strategies/${id}/toggle-auto-execute`, { method: "POST" }, token),
 };
 
 // Trading API

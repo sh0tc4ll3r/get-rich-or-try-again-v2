@@ -45,6 +45,7 @@ class StrategyResponse(BaseModel):
     stop_loss_pct: float | None
     take_profit_pct: float | None
     status: str
+    auto_execute: bool
     created_at: str
     deployed_at: str | None
 
@@ -63,6 +64,7 @@ class CreateStrategyRequest(BaseModel):
     max_daily_loss: float = Field(default=0.05, ge=0.01, le=0.5)
     stop_loss_pct: float | None = Field(default=None, ge=0.01, le=0.5)
     take_profit_pct: float | None = Field(default=None, ge=0.01, le=1.0)
+    auto_execute: bool = Field(default=False)
 
 
 class UpdateStrategyRequest(BaseModel):
@@ -75,6 +77,7 @@ class UpdateStrategyRequest(BaseModel):
     max_daily_loss: float | None = Field(default=None, ge=0.01, le=0.5)
     stop_loss_pct: float | None = Field(default=None, ge=0.01, le=0.5)
     take_profit_pct: float | None = Field(default=None, ge=0.01, le=1.0)
+    auto_execute: bool | None = None
 
 
 def strategy_to_response(strategy) -> StrategyResponse:
@@ -90,6 +93,7 @@ def strategy_to_response(strategy) -> StrategyResponse:
         stop_loss_pct=strategy.stop_loss_pct,
         take_profit_pct=strategy.take_profit_pct,
         status=strategy.status,
+        auto_execute=strategy.auto_execute,
         created_at=strategy.created_at.isoformat(),
         deployed_at=strategy.deployed_at.isoformat() if strategy.deployed_at else None,
     )
@@ -165,6 +169,7 @@ async def create_strategy(
         max_daily_loss=request.max_daily_loss,
         stop_loss_pct=request.stop_loss_pct,
         take_profit_pct=request.take_profit_pct,
+        auto_execute=request.auto_execute,
     )
     return strategy_to_response(strategy)
 
@@ -211,6 +216,7 @@ async def update_strategy(
         max_daily_loss=request.max_daily_loss,
         stop_loss_pct=request.stop_loss_pct,
         take_profit_pct=request.take_profit_pct,
+        auto_execute=request.auto_execute,
     )
     return strategy_to_response(strategy)
 
@@ -317,5 +323,28 @@ async def stop_strategy(strategy_id: int, user: CurrentUser, db: DbSession):
     # Unschedule the strategy from automated execution
     scheduler = get_scheduler()
     await scheduler.unschedule_strategy(strategy.id)
+
+    return strategy_to_response(strategy)
+
+
+@router.post("/{strategy_id}/toggle-auto-execute", response_model=StrategyResponse)
+async def toggle_auto_execute(strategy_id: int, user: CurrentUser, db: DbSession):
+    """Toggle auto-execution for an active strategy."""
+    service = StrategyService(db)
+    strategy = await service.get_by_id(strategy_id, user.id)
+    if not strategy:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Strategy not found",
+        )
+
+    if strategy.status != "active":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Auto-execution can only be toggled for active strategies",
+        )
+
+    # Toggle the auto_execute flag
+    strategy.auto_execute = not strategy.auto_execute
 
     return strategy_to_response(strategy)

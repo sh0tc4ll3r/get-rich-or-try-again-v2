@@ -44,6 +44,7 @@ class StrategyService:
         max_daily_loss: float = 0.05,
         stop_loss_pct: float | None = None,
         take_profit_pct: float | None = None,
+        auto_execute: bool = False,
     ) -> Strategy:
         """Create a new strategy."""
         strategy = Strategy(
@@ -57,6 +58,7 @@ class StrategyService:
             stop_loss_pct=stop_loss_pct,
             take_profit_pct=take_profit_pct,
             status=StrategyStatus.DRAFT.value,
+            auto_execute=auto_execute,
         )
         self.db.add(strategy)
         await self.db.flush()
@@ -72,6 +74,7 @@ class StrategyService:
         max_daily_loss: float | None = None,
         stop_loss_pct: float | None = None,
         take_profit_pct: float | None = None,
+        auto_execute: bool | None = None,
     ) -> Strategy:
         """Update a strategy."""
         if name is not None:
@@ -88,11 +91,14 @@ class StrategyService:
             strategy.stop_loss_pct = stop_loss_pct
         if take_profit_pct is not None:
             strategy.take_profit_pct = take_profit_pct
+        if auto_execute is not None:
+            strategy.auto_execute = auto_execute
         return strategy
 
     async def delete(self, strategy: Strategy) -> None:
-        """Delete a strategy."""
+        """Delete a strategy and its associated backtests."""
         await self.db.delete(strategy)
+        await self.db.flush()
 
     async def deploy(self, strategy: Strategy) -> Strategy:
         """Deploy a strategy to active trading."""
