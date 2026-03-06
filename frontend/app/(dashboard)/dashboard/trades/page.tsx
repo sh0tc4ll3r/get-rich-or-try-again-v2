@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { ArrowUpCircle, ArrowDownCircle, RefreshCw, Filter } from "lucide-react";
+import { ArrowUpCircle, ArrowDownCircle, RefreshCw, Filter, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { tradesApi, type Trade } from "@/lib/api";
 
 const statusConfig: Record<string, { variant: "default" | "secondary" | "success" | "destructive" | "warning"; label: string }> = {
@@ -30,6 +31,8 @@ export default function TradesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sourceFilter, setSourceFilter] = useState<string | undefined>(undefined);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [tradeToCancel, setTradeToCancel] = useState<number | null>(null);
 
   const fetchTrades = async () => {
     try {
@@ -51,15 +54,23 @@ export default function TradesPage() {
     fetchTrades();
   }, [sourceFilter]);
 
-  const handleCancel = async (tradeId: number) => {
-    if (!confirm("Are you sure you want to cancel this order?")) return;
+  const openCancelDialog = (tradeId: number) => {
+    setTradeToCancel(tradeId);
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancel = async () => {
+    if (tradeToCancel === null) return;
     try {
       const token = await getToken();
       if (!token) return;
-      await tradesApi.cancel(token, tradeId);
+      await tradesApi.cancel(token, tradeToCancel);
       fetchTrades();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to cancel order");
+    } finally {
+      setCancelDialogOpen(false);
+      setTradeToCancel(null);
     }
   };
 
@@ -71,7 +82,7 @@ export default function TradesPage() {
   if (loading && trades.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-slate-400">Loading trades...</div>
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -259,7 +270,7 @@ export default function TradesPage() {
                               size="sm"
                               variant="ghost"
                               className="text-slate-400 hover:text-red-400"
-                              onClick={() => handleCancel(trade.id)}
+                              onClick={() => openCancelDialog(trade.id)}
                             >
                               Cancel
                             </Button>
@@ -274,6 +285,16 @@ export default function TradesPage() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        title="Cancel Order"
+        description="Are you sure you want to cancel this order? This action cannot be undone."
+        onConfirm={handleCancel}
+        variant="warning"
+        confirmLabel="Cancel Order"
+      />
     </div>
   );
 }

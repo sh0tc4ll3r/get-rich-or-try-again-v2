@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { authApi, type UserProfile } from "@/lib/api";
 
 export default function SettingsPage() {
@@ -35,6 +36,9 @@ export default function SettingsPage() {
   const [showSecret, setShowSecret] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+
+  // Disconnect dialog
+  const [disconnectDialogOpen, setDisconnectDialogOpen] = useState(false);
 
   // Risk settings
   const [riskSettings, setRiskSettings] = useState({
@@ -94,8 +98,6 @@ export default function SettingsPage() {
   };
 
   const handleDisconnectAlpaca = async () => {
-    if (!confirm("Are you sure you want to disconnect your Alpaca account?")) return;
-
     try {
       setDisconnecting(true);
       setError(null);
@@ -110,6 +112,7 @@ export default function SettingsPage() {
       setError(err instanceof Error ? err.message : "Failed to disconnect Alpaca");
     } finally {
       setDisconnecting(false);
+      setDisconnectDialogOpen(false);
     }
   };
 
@@ -141,7 +144,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-slate-400">Loading settings...</div>
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -240,7 +243,7 @@ export default function SettingsPage() {
               <Button
                 variant="outline"
                 className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-                onClick={handleDisconnectAlpaca}
+                onClick={() => setDisconnectDialogOpen(true)}
                 disabled={disconnecting}
               >
                 {disconnecting ? (
@@ -505,6 +508,16 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={disconnectDialogOpen}
+        onOpenChange={setDisconnectDialogOpen}
+        title="Disconnect Alpaca"
+        description="Are you sure you want to disconnect your Alpaca account? You'll need to reconnect to execute trades."
+        onConfirm={handleDisconnectAlpaca}
+        variant="warning"
+        confirmLabel="Disconnect"
+      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Check,
   X,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -165,7 +166,7 @@ export default function ComparePage() {
   if (loading && backtests.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-slate-400">Loading backtests...</div>
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -175,8 +176,8 @@ export default function ComparePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <GitCompare className="h-8 w-8" />
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <GitCompare className="h-6 w-6" />
             Strategy Comparison
           </h1>
           <p className="text-slate-400 mt-1">

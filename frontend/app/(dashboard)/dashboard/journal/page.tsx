@@ -11,6 +11,7 @@ import {
   RefreshCw,
   Filter,
   MessageSquare,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -121,7 +122,7 @@ export default function JournalPage() {
   if (loading && trades.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-slate-400">Loading trade journal...</div>
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -131,8 +132,8 @@ export default function JournalPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <BookOpen className="h-8 w-8" />
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+            <BookOpen className="h-6 w-6" />
             Trade Journal
           </h1>
           <p className="text-slate-400 mt-1">

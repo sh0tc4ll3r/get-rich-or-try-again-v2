@@ -10,6 +10,7 @@ import {
   Target,
   AlertCircle,
   RefreshCw,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -131,7 +132,7 @@ export default function AnalyticsPage() {
   if (loading && !performance) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-slate-400">Loading analytics...</div>
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -141,7 +142,7 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Analytics</h1>
+          <h1 className="text-2xl font-bold text-white">Analytics</h1>
           <p className="text-slate-400 mt-1">
             Performance insights from your backtests
           </p>

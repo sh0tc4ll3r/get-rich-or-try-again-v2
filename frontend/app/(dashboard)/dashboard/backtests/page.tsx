@@ -7,6 +7,7 @@ import { Play, Trash2, TrendingUp, TrendingDown, Clock, CheckCircle, XCircle, Lo
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { backtestsApi, strategiesApi, type Backtest, type Strategy } from "@/lib/api";
 import { RunBacktestModal } from "./run-modal";
 
@@ -24,6 +25,8 @@ export default function BacktestsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showRunModal, setShowRunModal] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [backtestToDelete, setBacktestToDelete] = useState<number | null>(null);
 
   const fetchData = async () => {
     try {
@@ -49,15 +52,23 @@ export default function BacktestsPage() {
     fetchData();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this backtest?")) return;
+  const openDeleteDialog = (id: number) => {
+    setBacktestToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (backtestToDelete === null) return;
     try {
       const token = await getToken();
       if (!token) return;
-      await backtestsApi.delete(token, id);
+      await backtestsApi.delete(token, backtestToDelete);
       fetchData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete backtest");
+    } finally {
+      setDeleteDialogOpen(false);
+      setBacktestToDelete(null);
     }
   };
 
@@ -69,7 +80,7 @@ export default function BacktestsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-slate-400">Loading backtests...</div>
+        <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -161,7 +172,7 @@ export default function BacktestsPage() {
                       className="text-slate-400 hover:text-red-400"
                       onClick={(e) => {
                         e.preventDefault();
-                        handleDelete(backtest.id);
+                        openDeleteDialog(backtest.id);
                       }}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -216,6 +227,16 @@ export default function BacktestsPage() {
           onComplete={handleRunComplete}
         />
       )}
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Backtest"
+        description="Are you sure you want to delete this backtest? This action cannot be undone."
+        onConfirm={handleDelete}
+        variant="destructive"
+        confirmLabel="Delete"
+      />
     </div>
   );
 }
