@@ -22,12 +22,16 @@ import {
   tradingApi,
   strategiesApi,
   tradesApi,
+  authApi,
+  backtestsApi,
   type AccountInfo,
   type Position,
   type Strategy,
   type Trade,
+  type UserProfile,
 } from "@/lib/api";
 import { useWebSocket, type Position as WSPosition } from "@/lib/useWebSocket";
+import { OnboardingModal, useOnboarding } from "@/components/onboarding-modal";
 
 export default function DashboardPage() {
   const { getToken } = useAuth();
@@ -35,6 +39,8 @@ export default function DashboardPage() {
   const [positions, setPositions] = useState<Position[]>([]);
   const [strategies, setStrategies] = useState<Strategy[]>([]);
   const [trades, setTrades] = useState<Trade[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [backtestsCount, setBacktestsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [accountError, setAccountError] = useState<string | null>(null);
@@ -94,12 +100,16 @@ export default function DashboardPage() {
 
       // Fetch user data if authenticated
       if (token) {
-        const [strategiesData, tradesData] = await Promise.all([
+        const [strategiesData, tradesData, profileData, backtestsData] = await Promise.all([
           strategiesApi.list(token).catch(() => []),
           tradesApi.list(token, undefined, 10).catch(() => []),
+          authApi.getProfile(token).catch(() => null),
+          backtestsApi.list(token).catch(() => []),
         ]);
         setStrategies(strategiesData);
         setTrades(tradesData);
+        setProfile(profileData);
+        setBacktestsCount(backtestsData.length);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load dashboard data");
@@ -188,6 +198,13 @@ export default function DashboardPage() {
   const dailyPnLPct = lastEquity > 0 ? (dailyPnL / lastEquity) * 100 : 0;
   const isPositive = dailyPnL >= 0;
 
+  // Onboarding
+  const { showOnboarding, dismissOnboarding } = useOnboarding(
+    profile,
+    strategies.length,
+    backtestsCount
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -197,7 +214,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={dismissOnboarding}
+        profile={profile}
+      />
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -458,5 +481,6 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }
