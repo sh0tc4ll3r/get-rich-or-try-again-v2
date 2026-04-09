@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authApi, strategiesApi, backtestsApi, type UserProfile } from "@/lib/api";
+import { isDemoMode } from "@/lib/demo-data";
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -114,7 +115,7 @@ export function OnboardingModal({ isOpen, onClose, profile }: OnboardingModalPro
                 <Rocket className="h-6 w-6 text-blue-400" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">Welcome to Get Rich v2</h2>
+                <h2 className="text-xl font-bold text-white">Welcome to Get Rich or Try Again</h2>
                 <p className="text-slate-400 text-sm">
                   Let&apos;s get you set up for algorithmic trading
                 </p>
@@ -237,6 +238,9 @@ export function useOnboarding(profile: UserProfile | null, strategiesCount: numb
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
+    // Never show onboarding in demo mode
+    if (isDemoMode) return;
+
     // Check if onboarding was already dismissed
     const dismissed = localStorage.getItem(ONBOARDING_DISMISSED_KEY);
     if (dismissed === "true") {

@@ -1,31 +1,52 @@
-# Get Rich v2
+# Get Rich or Try Again
 
-**Understand and deploy systematic trading strategies.**
+**Paper trading. Real strategies. No risk — just try again.**
 
-A web platform for technically curious traders who want to go beyond "buy and hold" without building their own infrastructure.
+An algorithmic trading platform that lets retail traders build, backtest, and deploy strategies to paper trading — all in one place.
 
-## What This Is
+## Origin Story
 
-An algorithmic trading platform that prioritizes **education and transparency**:
-- Every strategy comes with an explanation of *why* it works
-- Every backtest shows not just returns, but *why* trades won or lost
-- Progressive disclosure: start simple, unlock complexity as you learn
+This started as an engineering degree final project ~4 years ago. I rebuilt it from scratch as a full-stack product with Next.js, FastAPI, and Alpaca — this time thinking as a PM, not just an engineer. The result is a platform that makes quant trading accessible without dumbing it down.
 
-## Target User
+## The Problem
 
-The **technically curious trader**:
-- Knows what RSI is, understands basic charts
-- Wants systematic trading without writing code
-- Values understanding over blind automation
-- Reads r/algotrading but hasn't built their own system
+Retail traders have strategy ideas but no safe way to validate them before risking real money. Existing tools are either too complex (QuantConnect, Zipline) or too simplistic (most trading apps). There's a gap for technically curious traders who want systematic trading without building their own infrastructure.
+
+## The Solution
+
+A complete workflow from idea to live paper trading:
+
+1. **Build Strategy** — Choose from RSI, Momentum, Mean Reversion, or Breakout. Configure risk limits and target symbols.
+2. **Backtest** — Run against historical data. See Sharpe ratio, max drawdown, win rate, and full trade logs.
+3. **Deploy** — Push to Alpaca paper trading with built-in guardrails (stop-loss, position sizing, daily loss limits).
+4. **Monitor** — Real-time dashboard with WebSocket streaming for live positions, P&L, and execution logs.
+
+## Product Decisions
+
+**Why these 4 strategy types?**
+RSI and Momentum are the most recognized by retail traders — they lower the learning curve. Mean Reversion and Breakout cover different market regimes (range-bound vs. trending), giving users enough variety without overwhelming them.
+
+**Why backtesting-first?**
+The backtest → deploy flow forces validation before capital allocation. This mirrors how professional quant shops work and protects users from deploying untested ideas.
+
+**Why Alpaca?**
+Free paper trading API, well-documented, no minimum balance. It removes the biggest barrier to entry for a side-project trading platform.
+
+**What I'd build next (and why):**
+1. **Custom strategy code editor** — power users want flexibility beyond presets
+2. **Strategy marketplace** — let users share and fork strategies (network effects)
+3. **Multi-broker support** — reduce vendor lock-in, expand addressable market
 
 ## Tech Stack
 
-- **Backend:** Python 3.11+ / FastAPI / SQLAlchemy / APScheduler
-- **Database:** PostgreSQL / Redis
-- **Frontend:** Next.js 14 / TypeScript / shadcn/ui / Lightweight Charts
-- **Auth:** Clerk
-- **Broker:** Alpaca (paper trading)
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14, TypeScript, Tailwind CSS, shadcn/ui, Lightweight Charts |
+| Backend | Python 3.11, FastAPI, SQLAlchemy, APScheduler |
+| Database | PostgreSQL, Redis |
+| Auth | Clerk |
+| Broker | Alpaca (paper trading) |
+| Real-time | WebSocket |
 
 ## Quick Start
 
@@ -35,13 +56,13 @@ The **technically curious trader**:
 - Node.js 18+
 - PostgreSQL & Redis (via Docker or Homebrew)
 
-### Option A: Using Docker (Recommended)
+### Setup
 
 ```bash
 # Start PostgreSQL and Redis
 docker compose up -d
 
-# Backend setup
+# Backend
 cd backend
 cp .env.example .env
 # Edit .env with your Clerk and Alpaca keys
@@ -57,40 +78,16 @@ npm install
 npm run dev
 ```
 
-### Option B: Using Homebrew (macOS)
+### Demo Mode
+
+To see the app with populated data (no backend required):
 
 ```bash
-# Install and start PostgreSQL + Redis
-brew install postgresql@15 redis
-brew services start postgresql@15
-brew services start redis
-
-# Create database
-/opt/homebrew/opt/postgresql@15/bin/createdb getrich
-
-# Backend setup
-cd backend
-cp .env.example .env
-# Edit .env - update DATABASE_URL to use your macOS username:
-# DATABASE_URL=postgresql+asyncpg://YOUR_USERNAME@localhost:5432/getrich
-
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-alembic upgrade head
-uvicorn app.main:app --reload
-
-# Frontend (new terminal)
-cd frontend
-npm install
-npm run dev
+# Add to frontend/.env.local
+NEXT_PUBLIC_DEMO_MODE=true
 ```
 
-### Access the App
-
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:8000
-- **API Docs:** http://localhost:8000/docs
+Then run `npm run dev` and navigate to `http://localhost:3000`.
 
 ### Environment Variables
 
@@ -110,61 +107,27 @@ ALPACA_BASE_URL=https://paper-api.alpaca.markets
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_DEMO_MODE=false
 ```
-
-## Features
-
-### Completed
-- [x] **Authentication** - Clerk integration with Google sign-in
-- [x] **Strategy Builder** - Create strategies with 4 types (Momentum, Mean Reversion, RSI, Breakout)
-- [x] **Backtesting Engine** - Historical simulation with equity curves and trade logs
-- [x] **Performance Metrics** - Sharpe ratio, Sortino ratio, max drawdown, win rate, profit factor
-- [x] **Live Execution** - Automated strategy execution during market hours (APScheduler)
-- [x] **Real-time Streaming** - WebSocket for live quotes and position updates
-- [x] **Dashboard** - Portfolio overview, positions, recent trades
-- [x] **Settings** - Alpaca connection, risk settings management
-
-### Planned
-- [ ] Performance Analytics - Historical performance charts, trade journal
-- [ ] Multiple broker support
-- [ ] Custom strategy code editor
 
 ## Project Structure
 
 ```
-get-rich-v2/
-├── backend/
-│   ├── app/
-│   │   ├── api/routes/     # API endpoints (auth, strategies, backtests, etc.)
-│   │   ├── core/           # Config, database, risk management
-│   │   ├── models/         # SQLAlchemy models (User, Strategy, Backtest, Trade)
-│   │   ├── services/       # Business logic (Alpaca, backtest engine, scheduler)
-│   │   └── strategies/     # Trading strategy implementations
-│   └── alembic/            # Database migrations
-├── frontend/
-│   ├── app/                # Next.js App Router pages
-│   │   └── (dashboard)/    # Protected dashboard routes
-│   ├── components/         # React components (shadcn/ui)
-│   └── lib/                # API client, WebSocket hook, utilities
-└── docker-compose.yml
+get-rich-or-try-again/
+  backend/
+    app/
+      api/routes/     # API endpoints (auth, strategies, backtests, etc.)
+      core/           # Config, database, risk management
+      models/         # SQLAlchemy models (User, Strategy, Backtest, Trade)
+      services/       # Business logic (Alpaca, backtest engine, scheduler)
+      strategies/     # Trading strategy implementations
+    alembic/          # Database migrations
+  frontend/
+    app/              # Next.js App Router pages
+      (dashboard)/    # Protected dashboard routes
+    components/       # React components (shadcn/ui)
+    lib/              # API client, WebSocket hook, demo data
 ```
-
-## API Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/auth/me` | Get current user profile |
-| `PUT /api/auth/settings` | Update user settings |
-| `POST /api/auth/connect-alpaca` | Connect Alpaca account |
-| `GET /api/strategies/` | List strategies |
-| `POST /api/strategies/` | Create strategy |
-| `POST /api/strategies/{id}/deploy` | Deploy strategy for live trading |
-| `GET /api/backtests/` | List backtests |
-| `POST /api/backtests/` | Run a backtest |
-| `GET /api/backtests/{id}` | Get backtest results with equity curve |
-| `GET /api/execution/status` | Get scheduler status |
-| `POST /api/execution/{id}/execute` | Manually trigger strategy |
-| `WS /api/ws?token=...` | Real-time data streaming |
 
 ## License
 

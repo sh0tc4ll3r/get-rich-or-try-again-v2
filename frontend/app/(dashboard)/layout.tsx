@@ -32,7 +32,7 @@ export default function DashboardLayout({
           <div className="container mx-auto flex h-16 items-center justify-between px-4">
             <div className="flex items-center gap-6">
               <Link href="/dashboard" className="text-xl font-bold text-white">
-                Get Rich v2
+                Get Rich or Try Again
               </Link>
               <div className="hidden md:flex items-center gap-4">
                 {navLinks.map((link) => (

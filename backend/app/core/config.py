@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # App
-    app_name: str = "Get Rich v2"
+    app_name: str = "Get Rich or Try Again"
     debug: bool = False
 
     # Database

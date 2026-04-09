@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { tradesApi, type Trade } from "@/lib/api";
+import { isDemoMode, demoTrades } from "@/lib/demo-data";
 
 const statusConfig: Record<string, { variant: "default" | "secondary" | "success" | "destructive" | "warning"; label: string }> = {
   pending: { variant: "secondary", label: "Pending" },
@@ -35,6 +36,14 @@ export default function TradesPage() {
   const [tradeToCancel, setTradeToCancel] = useState<number | null>(null);
 
   const fetchTrades = async () => {
+    if (isDemoMode) {
+      const filtered = sourceFilter
+        ? demoTrades.filter((t) => t.source === sourceFilter)
+        : demoTrades;
+      setTrades(filtered);
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const token = await getToken();

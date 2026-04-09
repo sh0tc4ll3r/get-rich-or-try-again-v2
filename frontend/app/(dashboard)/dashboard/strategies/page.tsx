@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { strategiesApi, executionApi, type Strategy } from "@/lib/api";
+import { isDemoMode, demoStrategies } from "@/lib/demo-data";
 
 const statusVariant = {
   draft: "secondary",
@@ -89,6 +90,11 @@ export default function StrategiesPage() {
   const [togglingAutoExecute, setTogglingAutoExecute] = useState<number | null>(null);
 
   const fetchStrategies = async () => {
+    if (isDemoMode) {
+      setStrategies(demoStrategies);
+      setLoading(false);
+      return;
+    }
     try {
       const token = await getToken();
       if (!token) return;

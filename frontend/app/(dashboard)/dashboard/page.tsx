@@ -32,6 +32,16 @@ import {
 } from "@/lib/api";
 import { useWebSocket, type Position as WSPosition } from "@/lib/useWebSocket";
 import { OnboardingModal, useOnboarding } from "@/components/onboarding-modal";
+import {
+  isDemoMode,
+  demoAccount,
+  demoPositions,
+  demoStrategies,
+  demoTrades,
+  demoProfile,
+  demoBacktests,
+  getDemoEquityCurve,
+} from "@/lib/demo-data";
 
 export default function DashboardPage() {
   const { getToken } = useAuth();
@@ -75,6 +85,17 @@ export default function DashboardPage() {
   }, [wsPositions, handlePositionsUpdate]);
 
   const fetchData = async () => {
+    if (isDemoMode) {
+      setAccount(demoAccount);
+      setPositions(demoPositions);
+      setStrategies(demoStrategies);
+      setTrades(demoTrades);
+      setProfile(demoProfile);
+      setBacktestsCount(demoBacktests.length);
+      setLoading(false);
+      return;
+    }
+
     try {
       setError(null);
       setAccountError(null);
@@ -156,21 +177,22 @@ export default function DashboardPage() {
         lineWidth: 2,
       });
 
-      // Generate sample data based on current portfolio value
-      const portfolioValue = parseFloat(account.portfolio_value);
-      const now = new Date();
-      const data = [];
-      for (let i = 30; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        // Add some variation
-        const variation = (Math.random() - 0.5) * 0.02;
-        const value = portfolioValue * (1 + variation * (30 - i) / 30);
-        data.push({
-          time: date.toISOString().split("T")[0],
-          value: value,
-        });
-      }
+      // Use demo equity curve or generate sample data
+      const data = isDemoMode
+        ? getDemoEquityCurve()
+        : (() => {
+            const portfolioValue = parseFloat(account.portfolio_value);
+            const now = new Date();
+            const pts = [];
+            for (let i = 30; i >= 0; i--) {
+              const date = new Date(now);
+              date.setDate(date.getDate() - i);
+              const variation = (Math.random() - 0.5) * 0.02;
+              const value = portfolioValue * (1 + variation * (30 - i) / 30);
+              pts.push({ time: date.toISOString().split("T")[0], value });
+            }
+            return pts;
+          })();
 
       areaSeries.setData(data);
       chart.timeScale().fitContent();

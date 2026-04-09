@@ -1,7 +1,7 @@
 [project]
 name = "get-rich-backend"
 version = "0.1.0"
-description = "Backend API for Get Rich v2 - Algorithmic Trading Platform"
+description = "Backend API for Get Rich or Try Again - Algorithmic Trading Platform"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.109.0",

@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { backtestsApi, strategiesApi, type Backtest, type Strategy } from "@/lib/api";
+import { isDemoMode, demoBacktests, demoStrategies } from "@/lib/demo-data";
 import { RunBacktestModal } from "./run-modal";
 
 const statusConfig = {
@@ -29,6 +30,12 @@ export default function BacktestsPage() {
   const [backtestToDelete, setBacktestToDelete] = useState<number | null>(null);
 
   const fetchData = async () => {
+    if (isDemoMode) {
+      setBacktests(demoBacktests);
+      setStrategies(demoStrategies);
+      setLoading(false);
+      return;
+    }
     try {
       const token = await getToken();
       if (!token) return;

@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Get Rich v2 API",
+    title="Get Rich or Try Again API",
     description="Algorithmic Trading Platform for Technically Curious Traders",
     version="0.1.0",
     lifespan=lifespan,

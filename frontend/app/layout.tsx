@@ -6,8 +6,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Get Rich v2",
-  description: "Algorithmic trading platform",
+  title: "Get Rich or Try Again",
+  description: "Paper trading. Real strategies. No risk — just try again.",
 };
 
 export default function RootLayout({

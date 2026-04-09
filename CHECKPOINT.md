@@ -1,4 +1,4 @@
-# Get Rich v2 - Project Checkpoint
+# Get Rich or Try Again - Project Checkpoint
 
 **Last Updated:** 2026-03-06
 

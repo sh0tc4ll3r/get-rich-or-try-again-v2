@@ -20,6 +20,7 @@ import {
   type PerformanceData,
   type Strategy,
 } from "@/lib/api";
+import { isDemoMode, getDemoPerformance, demoStrategies } from "@/lib/demo-data";
 
 const PERIODS = [
   { value: "7d", label: "7 Days" },
@@ -40,6 +41,12 @@ export default function AnalyticsPage() {
   const chartRef = useRef<HTMLDivElement>(null);
 
   const fetchData = async () => {
+    if (isDemoMode) {
+      setPerformance(getDemoPerformance(period));
+      setStrategies(demoStrategies);
+      setLoading(false);
+      return;
+    }
     try {
       setError(null);
       setLoading(true);
