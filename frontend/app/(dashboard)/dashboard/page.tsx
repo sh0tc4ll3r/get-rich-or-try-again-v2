@@ -73,7 +73,7 @@ export default function DashboardPage() {
   }, []);
 
   const { isConnected, positions: wsPositions } = useWebSocket({
-    autoConnect: true,
+    autoConnect: !isDemoMode,
     onPositions: handlePositionsUpdate,
   });
 
@@ -249,7 +249,12 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
           <p className="text-slate-400 mt-1 flex items-center gap-2">
             {account ? "Paper Trading Account" : "Connect your Alpaca account to see live data"}
-            {isConnected ? (
+            {isDemoMode ? (
+              <span className="inline-flex items-center gap-1 text-blue-400 text-xs">
+                <Activity className="h-3 w-3" />
+                Demo
+              </span>
+            ) : isConnected ? (
               <span className="inline-flex items-center gap-1 text-green-400 text-xs">
                 <Wifi className="h-3 w-3" />
                 Live
@@ -380,7 +385,7 @@ export default function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div ref={chartRef} className="w-full" />
+          <div ref={chartRef} className="w-full min-h-[200px]" />
         </CardContent>
       </Card>
 

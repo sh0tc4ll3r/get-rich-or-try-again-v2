@@ -309,7 +309,7 @@ export default function AnalyticsPage() {
               No backtest data available for this period
             </div>
           ) : (
-            <div ref={chartRef} className="w-full" />
+            <div ref={chartRef} className="w-full min-h-[300px]" />
           )}
         </CardContent>
       </Card>

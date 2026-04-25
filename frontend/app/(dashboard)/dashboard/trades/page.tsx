@@ -216,6 +216,7 @@ export default function TradesPage() {
                     <th className="pb-3 text-slate-400 font-medium text-right">Price</th>
                     <th className="pb-3 text-slate-400 font-medium">Status</th>
                     <th className="pb-3 text-slate-400 font-medium">Source</th>
+                    <th className="pb-3 text-slate-400 font-medium">Signal</th>
                     <th className="pb-3 text-slate-400 font-medium">Date</th>
                     <th className="pb-3 text-slate-400 font-medium"></th>
                   </tr>
@@ -269,6 +270,9 @@ export default function TradesPage() {
                         </td>
                         <td className="py-3">
                           <Badge variant={source.variant}>{source.label}</Badge>
+                        </td>
+                        <td className="py-3 text-slate-400 text-xs max-w-[180px]">
+                          {trade.signal_reason ?? "-"}
                         </td>
                         <td className="py-3 text-slate-400">
                           {new Date(trade.created_at).toLocaleDateString()}
